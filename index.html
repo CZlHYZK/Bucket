@@ -124,7 +124,7 @@ return false;
 function getNextPictures() {
 var scriptTag = document.createElement("script");
 page++;
-var url = decodeURIComponent("http://platform.sina.com.cn/slide/album_tech?jsoncallback=loadPictures&app_key=1271687855&num=" + num + "&page=" + page)
+var url = decodeURIComponent("https://platform.sina.com.cn/slide/album_tech?jsoncallback=loadPictures&app_key=1271687855&num=" + num + "&page=" + page)
 scriptTag.src = url;
 document.getElementsByTagName("head")[0].appendChild(scriptTag);
 document.getElementsByTagName("head")[0].removeChild(scriptTag);
