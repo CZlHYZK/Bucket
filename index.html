@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>木桶布局的面向对象写法</title>
+<style>
+{
+margin: 0;
+padding: 0;
+}
+
+.block {
+position: relative;
+float: left;
+text-align: center;
+line-height: 100%;
+}
+
+#ct {
+position: relative;
+width: 1000px;
+margin: 0 auto;
+}
+#ct img{
+position: relative;
+float: left;
+box-sizing: border-box;
+padding:5px;
+}
+#ct:after{
+display:block;
+clear:both;
+content:"";
+visibility:hidden;
+height:0；
+}
+.bottom{
+height:1px;
+}
+</style>
+</head>
+
+<body>
+<div id="ct"></div>
+<div class="bottom"></div>
+</body>
+<script>
+var num = 10,
+page = 0,
+ct = document.getElementById("ct"),
+ctWidth = parseInt(window.getComputedStyle(ct).width),
+bucket = new Bucket(ct,200,[]);
+function Bucket(ct, baseHeight, pictureList) {
+this.ct = ct;
+this.baseHeight = baseHeight;
+this.pictureList = pictureList;
+this.totalWidth = 0;
+this.curPicture = [];
+this.top=0;
+this.isLoad=false;
+}
+Bucket.prototype = {
+placeOnePicture: function () {
+if (this.pictureList.length > 0) {
+this.isLoad=true;
+var ele = this.pictureList.shift();
+var img = new Image();
+img.src = ele.img_url;
+img.style.height = "200px";
+ct.appendChild(img);
+var that = this;
+img.addEventListener("load", function () {
+var curWidth = parseInt(window.getComputedStyle(img).width);
+if (that.totalWidth + curWidth > ctWidth) {
+that.render();
+that.curPicture = [];
+that.totalWidth = 0;
+}
+that.curPicture.push(img);
+that.totalWidth += curWidth;
+that.placeOnePicture();
+that.top=document.querySelectorAll(".bottom")[0].offsetTop;
+console.log(that.top);
+});
+}else{
+this.isLoad=false;
+if(isVisible(document.querySelectorAll(".bottom")[0])){
+getNextPictures();
+}
+}
+},
+render: function () {
+var times = ctWidth / this.totalWidth;
+this.curPicture.forEach(function (ele) {
+ele.style.width = Math.floor(parseInt(window.getComputedStyle(ele).width)*times) + "px";
+ele.style.height = Math.floor(parseInt(window.getComputedStyle(ele).height)*times) + "px";
+});
+}
+}
+function loadPictures(data) {
+var curPictureList=bucket.curPicture;
+var curTotalWidth=bucket.totalWidth;
+var curTop=bucket.top;
+bucket = new Bucket(ct, 200, data.data);
+bucket.curPicture=curPictureList;
+bucket.totalWidth=curTotalWidth;
+bucket.top=curTop;
+bucket.placeOnePicture();
+
+}
+function isVisible(ele){
+var scrollH = document.documentElement.scrollTop,
+winH = window.innerHeight,
+top = bucket.top;
+if(top < winH + scrollH){
+return true;
+}else{
+return false;
+}
+}
+function getNextPictures() {
+var scriptTag = document.createElement("script");
+page++;
+var url = decodeURIComponent("http://platform.sina.com.cn/slide/album_tech?jsoncallback=loadPictures&app_key=1271687855&num=" + num + "&page=" + page)
+scriptTag.src = url;
+document.getElementsByTagName("head")[0].appendChild(scriptTag);
+document.getElementsByTagName("head")[0].removeChild(scriptTag);
+
+
+}
+getNextPictures();
+var timeID;
+window.onscroll=function(){
+if(timeID)
+clearTimeout(timeID);
+timeID=setTimeout(function(){
+if(bucket.isLoad==false&&isVisible(document.querySelectorAll(".bottom")[0])){
+getNextPictures();
+}
+},200);
+}
+</script>
+
+</html>
